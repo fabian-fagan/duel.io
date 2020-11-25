@@ -1,7 +1,7 @@
 const BG_COLOUR = '#231f20';
 const SNAKE_COLOUR = '#c2c2c2';
 const FOOD_COLOUR = '#e66916';
-const socket = io('https://obscure-harbor-81151.herokuapp.com/');
+const socket = io('http://localhost:3000');
 
 socket.on('init', handleInit);
 socket.on('gameState', handleGameState);
@@ -51,7 +51,12 @@ function init() {
 }
 
 function keydown(e) {
-	socket.emit('keydown', e.keyCode);
+	   if (e.keyCode === 82) {
+		   socket.emit('restart');
+	   }
+       else {
+          socket.emit('keydown', e.keyCode);
+	   }	
 }
 
 
@@ -96,12 +101,13 @@ function handleGameOver(data) {
 	}
 	data = JSON.parse(data);
 	if (data.winner === playerNumber) {
-		alert("You win!!");
+		//alert("You win!!");
 	}
 	else {
-		alert("You lose!!!");
+		//alert("You lose!!!");
 	}
-	gameActive = false;
+	//gameActive = false;
+	socket.emit('restart');
 }
 
 function handleGameCode(gameCode) {
@@ -110,7 +116,7 @@ function handleGameCode(gameCode) {
 
 function handleUnknownGame() {
 	reset();
-	alert("Unkown game code");
+	alert("Unknown game code");
 }
 
 function handleTooManyPlayers() {
@@ -125,3 +131,4 @@ function reset() {
 	initialScreen.style.display = "block";
 	gameScreen.style.display = "none";
 }
+

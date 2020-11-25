@@ -4,6 +4,8 @@ module.exports = {
 	initGame,
 	gameLoop,
 	getUpdatedVelocity,
+	checkRestart,
+	restart,
 }
 
 function initGame() {
@@ -147,4 +149,17 @@ function getUpdatedVelocity(keyCode) {
 		  return {x:0, y: 1};
 		}
 	}
+}
+
+function checkRestart(keyCode) {
+	if (keyCode === 82) {
+		return true
+	}
+	else {
+		return false;
+	}
+}
+
+function restart() {
+
 }
