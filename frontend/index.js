@@ -1,7 +1,7 @@
 const BG_COLOUR = '#231f20';
-const SNAKE_COLOUR = '#c2c2c2';
+const BODY_COLOUR = '#c2c2c2';
 const FOOD_COLOUR = '#e66916';
-const socket = io('https://obscure-harbor-81151.herokuapp.com/');
+const socket = io('http://localhost:3000');
 
 socket.on('init', handleInit);
 socket.on('gameState', handleGameState);
@@ -46,17 +46,34 @@ function init() {
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 	document.addEventListener('keydown', keydown);
+	document.addEventListener('keyup', keyup);
+	document.addEventListener('click', shoot);
+	document.addEventListener('mousemove', mouseMoved);
 	gameActive = true;
 
 }
 
 function keydown(e) {
-	   if (e.keyCode === 82) {
-		   socket.emit('restart');
-	   }
-       else {
-          socket.emit('keydown', e.keyCode);
-	   }	
+	if (e.keyCode === 82) {
+		socket.emit('restart');
+	}
+	else {
+		socket.emit('keydown', e.keyCode, playerNumber);
+	}
+}
+
+function keyup(e) {
+	socket.emit('keyup', e.keyCode, playerNumber);
+}
+
+function shoot() {
+	if (gameActive) {
+		socket.emit('shoot');
+	}
+}
+
+function mouseMoved(e) {
+	socket.emit('mouseMoved', e.offsetX, e.offsetY);
 }
 
 
@@ -71,17 +88,33 @@ function paintGame(state) {
 	ctx.fillStyle = FOOD_COLOUR;
 	ctx.fillRect(food.x * size, food.y * size, size, size);
 
-	paintPlayer(state.players[0], size, SNAKE_COLOUR);
+
+
+	paintPlayer(state.players[0], size, BODY_COLOUR);
 	paintPlayer(state.players[1], size, 'red');
 }
 
 function paintPlayer(playerState, size, colour) {
-	const snake = playerState.snake;
+	const body = playerState.body;
+	const bullet = playerState.bullet;
 	ctx.fillStyle = colour;
-	for (let cell of snake) {
-		ctx.fillRect(cell.x * size, cell.y * size, size, size);
+
+	var circle = new Path2D();
+
+	for (let cell of body) {
+		circle.arc(cell.x * size, cell.y * size, size / 2, 0, 2 * Math.PI);
+		ctx.fill(circle);
+		//ctx.fillRect(cell.x * size, cell.y * size, size, size);
+	}
+
+	for (let cell of bullet) {
+		if (cell.x != playerState.pos.x && cell.y != playerState.pos.y) {
+			circle.arc((cell.x * size) + 10, (cell.y * size) + 10, size / 6, 0, 2 * Math.PI);
+			ctx.fill(circle);
+		}
 	}
 }
+
 
 function handleInit(number) {
 	playerNumber = number;
