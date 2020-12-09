@@ -1,5 +1,4 @@
 const { GRID_SIZE } = require('./constants');
-let playerOneMoving, playerTwoMoving;
 let playerOneShooting, playerTwoShooting;
 let playerOneMousePosX, playerOneMousePosY;
 let playerTwoMousePosX, playerTwoMousePosY;
@@ -9,11 +8,6 @@ let trajectoryXp2, trajectoryYp2;
 module.exports = {
 	initGame,
 	gameLoop,
-	getUpdatedVelocity,
-	playerOneMove,
-	playerTwoMove,
-	playerOneStop,
-	playerTwoStop,
 	shoot,
 	saveMousePosition,
 }
@@ -49,6 +43,8 @@ function createGameState() {
 				x: 0,
 				y: 0,
 			},
+			moving: false,
+			currentKey: 0,
 
 		}, {
 			pos: {
@@ -71,6 +67,9 @@ function createGameState() {
 				x: 0,
 				y: 0,
 			},
+
+			moving: false,
+			currentKey: 0,
 
 		}],
 		food: {},
@@ -96,12 +95,12 @@ function gameLoop(state) {
 
 	/** Moving */
 
-	if (playerOneMoving) {
+	if (playerOne.moving) {
 		playerOne.pos.x += playerOne.vel.x;
 		playerOne.pos.y += playerOne.vel.y;
 
 	}
-	if (playerTwoMoving) {
+	if (playerTwo.moving) {
 		playerTwo.pos.x += playerTwo.vel.x;
 		playerTwo.pos.y += playerTwo.vel.y;
 	}
@@ -217,22 +216,6 @@ function randomFood(state) {
 	state.food = food;
 }
 
-function getUpdatedVelocity(keyCode) {
-	switch (keyCode) {
-		case 65: { //left
-			return { x: -0.15, y: 0 };
-		}
-		case 87: { //up
-			return { x: 0, y: -0.15 };
-		}
-		case 68: { //right
-			return { x: 0.15, y: 0 };
-		}
-		case 83: { //down
-			return { x: 0, y: 0.15 };
-		}
-	}
-}
 
 
 function shoot(state, clientNumber) {
@@ -257,20 +240,5 @@ function saveMousePosition(mouseX, mouseY, clientNumber) {
 	}
 }
 
-function playerOneMove() {
-	playerOneMoving = true;
-}
-
-function playerTwoMove() {
-	playerTwoMoving = true;
-}
-
-function playerOneStop() {
-	playerOneMoving = false;
-}
-
-function playerTwoStop() {
-	playerTwoMoving = false;
-}
 
 
