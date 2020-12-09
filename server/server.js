@@ -1,8 +1,7 @@
 const io = require('socket.io')();
-const { initGame, gameLoop, shoot, saveMousePosition, } = require('./game');
+const { initGame, gameLoop, saveMousePosition, } = require('./game');
 const { FRAME_RATE } = require('./constants');
 const { makeid } = require('./utils');
-
 const state = {};
 const clientRooms = {};
 let currentRoomName = null;
@@ -40,7 +39,6 @@ io.on('connection', client => {
       }
 
       clientRooms[client.id] = roomName;
-
       client.join(roomName);
       client.number = 2;
       client.emit('init', 2);
@@ -74,33 +72,7 @@ io.on('connection', client => {
          console.error(e)
          return;
       }
-
-      switch (keyCode) {
-         case 65: { //left
-            state[roomName].players[playerNumber].currentKey = keyCode;
-            state[roomName].players[playerNumber].moving = true;
-            state[roomName].players[playerNumber].vel = { x: -0.15, y: 0 };
-            break;
-         }
-         case 87: { //up
-            state[roomName].players[playerNumber].currentKey = keyCode;
-            state[roomName].players[playerNumber].moving = true;
-            state[roomName].players[playerNumber].vel = { x: 0, y: -0.15 };
-            break;
-         }
-         case 68: { //right
-            state[roomName].players[playerNumber].currentKey = keyCode;
-            state[roomName].players[playerNumber].moving = true;
-            state[roomName].players[playerNumber].vel = { x: 0.15, y: 0 };
-            break;
-         }
-         case 83: { //down
-            state[roomName].players[playerNumber].currentKey = keyCode;
-            state[roomName].players[playerNumber].moving = true;
-            state[roomName].players[playerNumber].vel = { x: 0, y: 0.15 };
-            break;
-         }
-      }
+      updateKeyStates(keyCode, true);
    }
 
    function handleKeyup(keyCode) {
@@ -115,12 +87,20 @@ io.on('connection', client => {
          console.error(e)
          return;
       }
+      updateKeyStates(keyCode, false);
+   }
 
-      if (keyCode === 87 || keyCode === 65 || keyCode === 83 || keyCode === 68) { //key released
-         if (state[roomName].players[playerNumber].currentKey === keyCode) {
-            state[roomName].players[playerNumber].moving = false;
-         }
-      }
+   function updateKeyStates(keyCode, value) {
+      const roomName = clientRooms[client.id];
+      const playerNumber = client.number - 1;
+      if (keyCode == 68)   //right
+         state[roomName].players[playerNumber].keyStates.right = value;
+      else if (keyCode == 83)  //down
+         state[roomName].players[playerNumber].keyStates.down = value;
+      else if (keyCode == 65) //left
+        state[roomName].players[playerNumber].keyStates.left = value;
+      else if (keyCode == 87) // up
+         state[roomName].players[playerNumber].keyStates.up = value;
    }
 
    function handleShoot() {
@@ -134,6 +114,7 @@ io.on('connection', client => {
    function handleMouseMoved(mouseX, mouseY) {
       saveMousePosition(mouseX, mouseY, client.number)
    }
+
 
 });
 
@@ -154,6 +135,8 @@ function startGameInterval(roomName) {
       }
    }, 1000 / FRAME_RATE);
 }
+
+
 function emitGameState(room, state) {
    io.sockets.in(room).emit('gameState', JSON.stringify(state));
 }

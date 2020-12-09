@@ -1,5 +1,4 @@
 const { GRID_SIZE } = require('./constants');
-let playerOneShooting, playerTwoShooting;
 let playerOneMousePosX, playerOneMousePosY;
 let playerTwoMousePosX, playerTwoMousePosY;
 let trajectoryXp1, trajectoryYp1;
@@ -8,7 +7,6 @@ let trajectoryXp2, trajectoryYp2;
 module.exports = {
 	initGame,
 	gameLoop,
-	shoot,
 	saveMousePosition,
 }
 
@@ -19,8 +17,6 @@ function initGame() {
 }
 
 function createGameState() {
-	playerOneShooting = false;
-	playerTwoShooting = false;
 	return {
 		players: [{
 			pos: {
@@ -42,6 +38,12 @@ function createGameState() {
 			mouseLoc: {
 				x: 0,
 				y: 0,
+			},
+			keyStates: {
+				up: false,
+				down: false,
+				left: false,
+				right: false
 			},
 			moving: false,
 			shooting: false,
@@ -68,7 +70,12 @@ function createGameState() {
 				x: 0,
 				y: 0,
 			},
-
+			keyStates: {
+				up: false,
+				down: false,
+				left: false,
+				right: false
+			},
 			moving: false,
 			shooting: false,
 			currentKey: 0,
@@ -80,8 +87,12 @@ function createGameState() {
 	};
 }
 
-
+var lastLoop = new Date();
 function gameLoop(state) {
+	var thisLoop = new Date();
+    var fps = 1000 / (thisLoop - lastLoop);
+	lastLoop = thisLoop;
+	console.log(fps);
 	if (!state) {
 		return;
 	}
@@ -95,17 +106,44 @@ function gameLoop(state) {
 	playerTwo.mouseLoc.x = playerTwoMousePosX;
 	playerTwo.mouseLoc.y = playerTwoMousePosY;
 
-	/** Moving */
+	playerOne.vel = { x: 0, y: 0 };
+	playerTwo.vel = { x: 0, y: 0 };
 
-	if (playerOne.moving) {
-		playerOne.pos.x += playerOne.vel.x;
-		playerOne.pos.y += playerOne.vel.y;
+	/** P1 Moving */
 
+	if (playerOne.keyStates.left) {
+		playerOne.vel.x = -0.15;
 	}
-	if (playerTwo.moving) {
-		playerTwo.pos.x += playerTwo.vel.x;
-		playerTwo.pos.y += playerTwo.vel.y;
+	if (playerOne.keyStates.right) {
+		playerOne.vel.x = 0.15;
 	}
+	if (playerOne.keyStates.up) {
+		playerOne.vel.y = -0.15;
+	}
+	if (playerOne.keyStates.down) {
+		playerOne.vel.y = 0.15;
+	}
+
+	playerOne.pos.x += playerOne.vel.x;
+	playerOne.pos.y += playerOne.vel.y;
+
+	/** P2 Moving */
+
+	if (playerTwo.keyStates.left) {
+		playerTwo.vel.x = -0.15;
+	}
+	if (playerTwo.keyStates.right) {
+		playerTwo.vel.x = 0.15;
+	}
+	if (playerTwo.keyStates.up) {
+		playerTwo.vel.y = -0.15;
+	}
+	if (playerTwo.keyStates.down) {
+		playerTwo.vel.y = 0.15;
+	}
+
+	playerTwo.pos.x += playerTwo.vel.x;
+	playerTwo.pos.y += playerTwo.vel.y;
 
 	/**P1 Shooting */
 
@@ -115,8 +153,8 @@ function gameLoop(state) {
 	}
 
 	if (playerOne.shooting) {
-		playerOne.bullet[0].x = playerOne.bullet[0].x + (trajectoryXp1 * 0.2);
-		playerOne.bullet[0].y = playerOne.bullet[0].y + (trajectoryYp1 * 0.2);
+		playerOne.bullet[0].x = playerOne.bullet[0].x + (trajectoryXp1 * 0.15);
+		playerOne.bullet[0].y = playerOne.bullet[0].y + (trajectoryYp1 * 0.15);
 		if (playerOne.bullet[0].x < 0 || playerOne.bullet[0].x > GRID_SIZE || playerOne.bullet[0].y < 0 || playerOne.bullet[0].y > GRID_SIZE) {
 			playerOne.shooting = false; //   (outside canvas)
 
@@ -129,7 +167,7 @@ function gameLoop(state) {
 
 	/**P2 Shooting */
 
-	if (!playerTwo.shooting) { 
+	if (!playerTwo.shooting) {
 		trajectoryXp2 = (playerTwo.mouseLoc.x / 30) - playerTwo.pos.x; //devide mouse loc by 30 for grid of 20
 		trajectoryYp2 = (playerTwo.mouseLoc.y / 30) - playerTwo.pos.y;
 	}
@@ -141,7 +179,7 @@ function gameLoop(state) {
 			playerTwo.shooting = false; //   (outside canvas)
 		}
 	}
-	else { 
+	else {
 		playerTwo.bullet[0].x = playerTwo.pos.x;
 		playerTwo.bullet[0].y = playerTwo.pos.y;
 	}
@@ -229,6 +267,3 @@ function saveMousePosition(mouseX, mouseY, clientNumber) {
 		playerTwoMousePosY = mouseY;
 	}
 }
-
-
-
