@@ -125,15 +125,14 @@ io.on('connection', client => {
 
    function handleShoot() {
       const roomName = clientRooms[client.id];
+      const playerNumber = client.number - 1;
       if (playerJoined) {
-         shoot(state[roomName], client.number);
+         state[roomName].players[playerNumber].shooting = true;
       }
    }
 
    function handleMouseMoved(mouseX, mouseY) {
       saveMousePosition(mouseX, mouseY, client.number)
-
-      //console.log(mouseX, playerNumber);
    }
 
 });

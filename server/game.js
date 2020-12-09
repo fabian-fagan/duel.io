@@ -44,6 +44,7 @@ function createGameState() {
 				y: 0,
 			},
 			moving: false,
+			shooting: false,
 			currentKey: 0,
 
 		}, {
@@ -69,6 +70,7 @@ function createGameState() {
 			},
 
 			moving: false,
+			shooting: false,
 			currentKey: 0,
 
 		}],
@@ -107,16 +109,16 @@ function gameLoop(state) {
 
 	/**P1 Shooting */
 
-	if (!playerOneShooting) {
+	if (!playerOne.shooting) {
 		trajectoryXp1 = (playerOne.mouseLoc.x / 30) - playerOne.pos.x; //devide mouse loc by 30 for grid of 20
 		trajectoryYp1 = (playerOne.mouseLoc.y / 30) - playerOne.pos.y;
 	}
 
-	if (playerOneShooting) {
+	if (playerOne.shooting) {
 		playerOne.bullet[0].x = playerOne.bullet[0].x + (trajectoryXp1 * 0.2);
 		playerOne.bullet[0].y = playerOne.bullet[0].y + (trajectoryYp1 * 0.2);
 		if (playerOne.bullet[0].x < 0 || playerOne.bullet[0].x > GRID_SIZE || playerOne.bullet[0].y < 0 || playerOne.bullet[0].y > GRID_SIZE) {
-			playerOneShooting = false; //   (outside canvas)
+			playerOne.shooting = false; //   (outside canvas)
 
 		}
 	}
@@ -127,20 +129,19 @@ function gameLoop(state) {
 
 	/**P2 Shooting */
 
-	if (!playerTwoShooting) { 
+	if (!playerTwo.shooting) { 
 		trajectoryXp2 = (playerTwo.mouseLoc.x / 30) - playerTwo.pos.x; //devide mouse loc by 30 for grid of 20
 		trajectoryYp2 = (playerTwo.mouseLoc.y / 30) - playerTwo.pos.y;
 	}
 
-	if (playerTwoShooting) {
+	if (playerTwo.shooting) {
 		playerTwo.bullet[0].x = playerTwo.bullet[0].x + (trajectoryXp2 * 0.2);
 		playerTwo.bullet[0].y = playerTwo.bullet[0].y + (trajectoryYp2 * 0.2);
 		if (playerTwo.bullet[0].x < 0 || playerTwo.bullet[0].x > GRID_SIZE || playerTwo.bullet[0].y < 0 || playerTwo.bullet[0].y > GRID_SIZE) {
-			playerTwoShooting = false; //   (outside canvas)
-
+			playerTwo.shooting = false; //   (outside canvas)
 		}
 	}
-	else {
+	else { 
 		playerTwo.bullet[0].x = playerTwo.pos.x;
 		playerTwo.bullet[0].y = playerTwo.pos.y;
 	}
@@ -216,17 +217,6 @@ function randomFood(state) {
 	state.food = food;
 }
 
-
-
-function shoot(state, clientNumber) {
-	if (clientNumber === 1) {
-		playerOneShooting = true;
-	}
-	else if (clientNumber === 2){
-		playerTwoShooting = true;
-	}
-
-}
 
 function saveMousePosition(mouseX, mouseY, clientNumber) {
 
