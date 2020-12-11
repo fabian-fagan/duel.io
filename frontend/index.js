@@ -1,6 +1,6 @@
 const BG_COLOUR = '#231f20';
 const BODY_COLOUR = '#c2c2c2';
-const FOOD_COLOUR = '#e66916';
+const HP_COLOUR = '#e66916';
 const socket = io('http://localhost:3000');
 
 socket.on('init', handleInit);
@@ -40,7 +40,7 @@ function init() {
 	gameScreen.style.display = "block";
 	canvas = document.getElementById('canvas');
 	ctx = canvas.getContext('2d');
-	canvas.width = canvas.height = 600;
+	canvas.width = canvas.height = 800;
 
 	ctx.fillStyle = BG_COLOUR;
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -73,20 +73,22 @@ function shoot() {
 }
 
 function mouseMoved(e) {
-	socket.emit('mouseMoved', e.offsetX, e.offsetY);
+	if (gameActive) {
+		socket.emit('mouseMoved', e.offsetX, e.offsetY);
+	}
 }
 
 
 function paintGame(state) {
 	ctx.fillStyle = BG_COLOUR;
-	ctx.fillRect(0, 0, canvas.width, canvas.height);
+	ctx.fillRect(0, 0, canvas.width, canvas.height); //background
 
-	const food = state.food;
+	const healthPickup = state.healthPickup;
 	const gridsize = state.gridsize;
 	const size = canvas.width / gridsize;
 
-	ctx.fillStyle = FOOD_COLOUR;
-	ctx.fillRect(food.x * size, food.y * size, size, size);
+	ctx.fillStyle = HP_COLOUR;
+	ctx.fillRect(healthPickup.x * size, healthPickup.y * size, size / 2.66, size / 2.66); //health pickup
 
 
 
@@ -97,20 +99,32 @@ function paintGame(state) {
 function paintPlayer(playerState, size, colour) {
 	const body = playerState.body;
 	const bullet = playerState.bullet;
+	const healthBarWidth = playerState.health * 0.4;
 	ctx.fillStyle = colour;
 
 	var circle = new Path2D();
 
 	for (let cell of body) {
-		circle.arc(cell.x * size, cell.y * size, size / 2, 0, 2 * Math.PI);
+		circle.arc(cell.x * size, cell.y * size, size / 2.66, 0, 2 * Math.PI); //body 
 		ctx.fill(circle);
-		//ctx.fillRect(cell.x * size, cell.y * size, size, size);
+
+		if (playerState.health < 80 && playerState.health > 30) { //determine health colour
+			ctx.fillStyle = 'yellow';
+		}
+		else if (playerState.health < 30) {
+			ctx.fillStyle = 'red';
+		}
+		else {
+			ctx.fillStyle = 'green';
+		}
+		ctx.fillRect((cell.x * size) - 20, (cell.y * size) + 20, healthBarWidth, size / 4); //health bar 
 	}
 
 	for (let cell of bullet) {
+		ctx.fillStyle = colour;
 		if (cell.x != playerState.pos.x && cell.y != playerState.pos.y) {
-			circle.arc((cell.x * size) + 10, (cell.y * size) + 10, size / 6, 0, 2 * Math.PI);
-			ctx.fill(circle);
+			circle.arc((cell.x * size) + 10, (cell.y * size) + 10, size / 8, 0, 2 * Math.PI); 
+			ctx.fill(circle); //bullet
 		}
 	}
 }

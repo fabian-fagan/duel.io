@@ -1,7 +1,7 @@
 const io = require('socket.io')();
-const { initGame, gameLoop, saveMousePosition, } = require('./game');
+const { initGame, gameLoop,  } = require('./game');
 const { FRAME_RATE } = require('./constants');
-const { makeid } = require('./utils');
+const { makeid } = require('./utils');  
 const state = {};
 const clientRooms = {};
 let currentRoomName = null;
@@ -57,7 +57,7 @@ io.on('connection', client => {
       client.join(roomName);
       client.number = 1;
       client.emit('init', 1);
-   }
+   }  
 
    function handleKeydown(keyCode) {
       const roomName = clientRooms[client.id];
@@ -85,7 +85,7 @@ io.on('connection', client => {
          keyCode = parseInt(keyCode);
       } catch (e) {
          console.error(e)
-         return;
+         return;  
       }
       updateKeyStates(keyCode, false);
    }
@@ -98,7 +98,7 @@ io.on('connection', client => {
       else if (keyCode == 83)  //down
          state[roomName].players[playerNumber].keyStates.down = value;
       else if (keyCode == 65) //left
-        state[roomName].players[playerNumber].keyStates.left = value;
+         state[roomName].players[playerNumber].keyStates.left = value;
       else if (keyCode == 87) // up
          state[roomName].players[playerNumber].keyStates.up = value;
    }
@@ -109,12 +109,17 @@ io.on('connection', client => {
       if (playerJoined) {
          state[roomName].players[playerNumber].shooting = true;
       }
-   }
+   } 
 
    function handleMouseMoved(mouseX, mouseY) {
-      saveMousePosition(mouseX, mouseY, client.number)
+      const roomName = clientRooms[client.id];
+      const playerNumber = client.number - 1;
+      if (playerJoined) {
+         state[roomName].players[playerNumber].mouseLoc.x = mouseX;
+         state[roomName].players[playerNumber].mouseLoc.y = mouseY;
+      }
    }
-
+    
 
 });
 
@@ -122,7 +127,7 @@ function startGameInterval(roomName) {
    const intervalId = setInterval(() => {
       const winner = gameLoop(state[roomName]);
 
-
+ 
       if (!winner) { //game continues
          emitGameState(roomName, state[roomName]);
       }

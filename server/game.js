@@ -1,18 +1,15 @@
 const { GRID_SIZE } = require('./constants');
-let playerOneMousePosX, playerOneMousePosY;
-let playerTwoMousePosX, playerTwoMousePosY;
 let trajectoryXp1, trajectoryYp1;
 let trajectoryXp2, trajectoryYp2;
 
 module.exports = {
 	initGame,
 	gameLoop,
-	saveMousePosition,
 }
 
 function initGame() {
 	const state = createGameState()
-	randomFood(state);
+	randomHealthPickup(state);
 	return state;
 }
 
@@ -47,7 +44,7 @@ function createGameState() {
 			},
 			moving: false,
 			shooting: false,
-			currentKey: 0,
+			health: 100,
 
 		}, {
 			pos: {
@@ -78,21 +75,17 @@ function createGameState() {
 			},
 			moving: false,
 			shooting: false,
-			currentKey: 0,
+			health: 100,
 
 		}],
-		food: {},
+		healthPickup: {},
 		gridsize: GRID_SIZE,
 		active: true,
 	};
 }
 
-var lastLoop = new Date();
+
 function gameLoop(state) {
-	var thisLoop = new Date();
-    var fps = 1000 / (thisLoop - lastLoop);
-	lastLoop = thisLoop;
-	console.log(fps);
 	if (!state) {
 		return;
 	}
@@ -100,28 +93,22 @@ function gameLoop(state) {
 	const playerOne = state.players[0];
 	const playerTwo = state.players[1];
 
-	playerOne.mouseLoc.x = playerOneMousePosX;
-	playerOne.mouseLoc.y = playerOneMousePosY;
-
-	playerTwo.mouseLoc.x = playerTwoMousePosX;
-	playerTwo.mouseLoc.y = playerTwoMousePosY;
-
 	playerOne.vel = { x: 0, y: 0 };
 	playerTwo.vel = { x: 0, y: 0 };
 
 	/** P1 Moving */
 
 	if (playerOne.keyStates.left) {
-		playerOne.vel.x = -0.15;
+		playerOne.vel.x = -0.10;
 	}
 	if (playerOne.keyStates.right) {
-		playerOne.vel.x = 0.15;
+		playerOne.vel.x = 0.10;
 	}
 	if (playerOne.keyStates.up) {
-		playerOne.vel.y = -0.15;
+		playerOne.vel.y = -0.10;
 	}
 	if (playerOne.keyStates.down) {
-		playerOne.vel.y = 0.15;
+		playerOne.vel.y = 0.10;
 	}
 
 	playerOne.pos.x += playerOne.vel.x;
@@ -130,16 +117,16 @@ function gameLoop(state) {
 	/** P2 Moving */
 
 	if (playerTwo.keyStates.left) {
-		playerTwo.vel.x = -0.15;
+		playerTwo.vel.x = -0.10;
 	}
 	if (playerTwo.keyStates.right) {
-		playerTwo.vel.x = 0.15;
+		playerTwo.vel.x = 0.10;
 	}
 	if (playerTwo.keyStates.up) {
-		playerTwo.vel.y = -0.15;
+		playerTwo.vel.y = -0.10;
 	}
 	if (playerTwo.keyStates.down) {
-		playerTwo.vel.y = 0.15;
+		playerTwo.vel.y = 0.10;
 	}
 
 	playerTwo.pos.x += playerTwo.vel.x;
@@ -148,8 +135,8 @@ function gameLoop(state) {
 	/**P1 Shooting */
 
 	if (!playerOne.shooting) {
-		trajectoryXp1 = (playerOne.mouseLoc.x / 30) - playerOne.pos.x; //devide mouse loc by 30 for grid of 20
-		trajectoryYp1 = (playerOne.mouseLoc.y / 30) - playerOne.pos.y;
+		trajectoryXp1 = (playerOne.mouseLoc.x / 40) - playerOne.pos.x; //devide mouse loc by 40 for grid of 20
+		trajectoryYp1 = (playerOne.mouseLoc.y / 40) - playerOne.pos.y;
 	}
 
 	if (playerOne.shooting) {
@@ -168,8 +155,8 @@ function gameLoop(state) {
 	/**P2 Shooting */
 
 	if (!playerTwo.shooting) {
-		trajectoryXp2 = (playerTwo.mouseLoc.x / 30) - playerTwo.pos.x; //devide mouse loc by 30 for grid of 20
-		trajectoryYp2 = (playerTwo.mouseLoc.y / 30) - playerTwo.pos.y;
+		trajectoryXp2 = (playerTwo.mouseLoc.x / 40) - playerTwo.pos.x; //devide mouse loc by 30 for grid of 20
+		trajectoryYp2 = (playerTwo.mouseLoc.y / 40) - playerTwo.pos.y;
 	}
 
 	if (playerTwo.shooting) {
@@ -184,6 +171,40 @@ function gameLoop(state) {
 		playerTwo.bullet[0].y = playerTwo.pos.y;
 	}
 
+	/**P1 hitting P2 */
+
+	for (let cell of playerOne.bullet) {
+		if (playerOne.shooting) {
+			if (cell.x < playerTwo.pos.x + 1 &&
+				cell.x + 0.33 > playerTwo.pos.x &&
+				cell.y < playerTwo.pos.y + 1 &&
+				0.33 + cell.y > playerTwo.pos.y) { //hit
+				playerTwo.health -= 20;
+				if (playerTwo.health == 0) {
+					return 1; // P1 wins
+				}
+				console.log("hit");
+			}
+		}
+	}
+
+	/**P2 hitting P1 */
+
+	for (let cell of playerTwo.bullet) {
+		if (playerTwo.shooting) {
+			if (cell.x < playerOne.pos.x + 1 &&
+				cell.x + 0.33 > playerOne.pos.x &&
+				cell.y < playerOne.pos.y + 0.6 &&
+				0.33 + cell.y > playerOne.pos.y) { //hit
+				playerOne.health -= 20;
+				if (playerOne.health == 0) {
+					return 2; // P2 wins
+				}
+				console.log("hit");
+			}
+		}
+	}
+
 
 	/**TO CHANGE */
 
@@ -196,74 +217,51 @@ function gameLoop(state) {
 
 	}
 
-	if (state.food.x == playerOne.pos.x && state.food.y == playerOne.pos.y) { //on food 
-		playerOne.body.push({ ...playerOne.pos }); //body grows
-		playerOne.pos.x += playerOne.vel.x;
-		playerOne.pos.y += playerOne.vel.y;
-		randomFood(state);
-	}
+	/** Health pickup */
 
-	if (state.food.x == playerTwo.pos.x && state.food.y == playerTwo.pos.y) { //on food 
-		playerTwo.body.push({ ...playerTwo.pos }); //body grows
-		playerTwo.pos.x += playerTwo.vel.x;
-		playerTwo.pos.y += playerTwo.vel.y;
-		randomFood(state);
-	}
+	if (playerOne.pos.x < state.healthPickup.x + 0.5 &&
+		playerOne.pos.x + 1 > state.healthPickup.x &&
+		playerOne.pos.y < state.healthPickup.y + 0.5 &&
+		1 + playerOne.pos.y > state.healthPickup.y) { //P1 ran into pickup
 
-	if (playerOne.vel.x || playerOne.vel.y) {
-		for (let cell of playerOne.body) {
-			if (cell.x === playerOne.pos.x && cell.y === playerOne.pos.y) {
-				//return 2; //player 2 wins (bumped head)
-			}
+		if (playerOne.health != 100) {
+			playerOne.health += 20;
+			randomHealthPickup(state);
 		}
-
-		playerOne.body.push({ ...playerOne.pos });
-		playerOne.body.shift();
 	}
 
-	if (playerTwo.vel.x || playerTwo.vel.y) {
-		for (let cell of playerTwo.body) {
-			if (cell.x === playerTwo.pos.x && cell.y === playerTwo.pos.y) {
-				//return 1; //player 1 wins (bumped head)
-			}
+	if (playerTwo.pos.x < state.healthPickup.x + 0.5 &&
+		playerTwo.pos.x + 1 > state.healthPickup.x &&
+		playerTwo.pos.y < state.healthPickup.y + 0.5 &&
+		1 + playerTwo.pos.y > state.healthPickup.y) { //P2 ran into pickup
+
+		if (playerTwo.health != 100) {
+			playerTwo.health += 20;
+			randomHealthPickup(state);
 		}
-
-		playerTwo.body.push({ ...playerTwo.pos });
-		playerTwo.body.shift();
 	}
 
-	return false; //there is no winner
+	playerOne.body.push({ ...playerOne.pos });
+	playerOne.body.shift();
+
+	playerTwo.body.push({ ...playerTwo.pos });
+	playerTwo.body.shift();
+
+	return false; //there is no winner yet
 }
 
-function randomFood(state) {
-	food = {
+function randomHealthPickup(state) {
+	healthPickup = {
 		x: Math.floor(Math.random() * GRID_SIZE),
 		y: Math.floor(Math.random() * GRID_SIZE),
 	}
 
 	for (let cell of state.players[0].body) {
-		if (cell.x === food.x && cell.y === food.y) {
-			return randomFood(state); //find square that isnt body
+		if (cell.x === healthPickup.x && cell.y === healthPickup.y) {
+			return randomHealthPickup(state); //find square that isnt wall
 		}
 	}
 
-	for (let cell of state.players[1].body) {
-		if (cell.x === food.x && cell.y === food.y) {
-			return randomFood(state); //find square that isnt body
-		}
-	}
-	state.food = food;
+	state.healthPickup = healthPickup;
 }
 
-
-function saveMousePosition(mouseX, mouseY, clientNumber) {
-
-	if (clientNumber === 1) {
-		playerOneMousePosX = mouseX;
-		playerOneMousePosY = mouseY;
-	}
-	else {
-		playerTwoMousePosX = mouseX;
-		playerTwoMousePosY = mouseY;
-	}
-}
