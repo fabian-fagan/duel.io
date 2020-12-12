@@ -97,6 +97,15 @@ function paintGame(state) {
 	}
 	paintPlayer(state.players[0], size, BODY_COLOUR); 
 	paintPlayer(state.players[1], size, 'red');
+
+	/*Scores*/
+    ctx.font = "30px Arial"; 
+	ctx.fillStyle = 'white';
+	ctx.fillText("Score:", 20,30);
+	ctx.fillText(state.players[0].score, 120,30);
+	ctx.fillStyle = 'red';
+	ctx.fillText("Score:", 650,30);
+	ctx.fillText(state.players[1].score, 750,30);
 }
 
 function paintPlayer(playerState, size, colour) {

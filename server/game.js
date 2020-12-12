@@ -48,6 +48,7 @@ function createGameState() {
 			moving: false,
 			shooting: false,
 			health: 100,
+			score: 0,
 
 		}, {
 			pos: {
@@ -79,6 +80,7 @@ function createGameState() {
 			moving: false,
 			shooting: false,
 			health: 100,
+			score: 0,
 
 		}],
 		healthPickup: {},
@@ -196,6 +198,7 @@ function gameLoop(state) {
 				playerTwo.health -= 20;
 				playerOne.shooting = false;
 				if (playerTwo.health == 0) {
+					playerOne.score += 1;
 					return 1; // P1 wins
 				}
 			}
@@ -213,6 +216,7 @@ function gameLoop(state) {
 				playerOne.health -= 20;
 				playerTwo.shooting = false;
 				if (playerOne.health == 0) {
+					playerTwo.score += 1;
 					return 2; // P2 wins
 				}
 			}
