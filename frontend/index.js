@@ -32,6 +32,7 @@ function joinGame() {
 }
 
 let canvas, ctx;
+let mapnum = 0;
 let playerNumber;
 let gameActive = false;
 
@@ -90,9 +91,12 @@ function paintGame(state) {
 	ctx.fillStyle = HP_COLOUR;
 	ctx.fillRect(healthPickup.x * size, healthPickup.y * size, size / 2.66, size / 2.66); //health pickup
 
-
-
-	paintPlayer(state.players[0], size, BODY_COLOUR);
+	/* Map (currently draws every frame -- not ideal)*/
+	ctx.fillStyle = 'grey';
+	for (let wall of state.walls) {
+        ctx.fillRect(wall.x * size, wall.y * size, size, size);
+	}
+	paintPlayer(state.players[0], size, BODY_COLOUR); 
 	paintPlayer(state.players[1], size, 'red');
 }
 
@@ -123,7 +127,7 @@ function paintPlayer(playerState, size, colour) {
 	for (let cell of bullet) {
 		ctx.fillStyle = colour;
 		if (cell.x != playerState.pos.x && cell.y != playerState.pos.y) {
-			circle.arc((cell.x * size) + 10, (cell.y * size) + 10, size / 8, 0, 2 * Math.PI); 
+			circle.arc((cell.x * size) + 10, (cell.y * size) + 10, size / 8, 0, 2 * Math.PI);
 			ctx.fill(circle); //bullet
 		}
 	}

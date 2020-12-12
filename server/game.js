@@ -1,4 +1,5 @@
 const { GRID_SIZE } = require('./constants');
+const { MAPS } = require('./constants');
 let trajectoryXp1, trajectoryYp1;
 let trajectoryXp2, trajectoryYp2;
 
@@ -10,6 +11,7 @@ module.exports = {
 function initGame() {
 	const state = createGameState()
 	randomHealthPickup(state);
+	createMap(state);
 	return state;
 }
 
@@ -81,6 +83,8 @@ function createGameState() {
 		healthPickup: {},
 		gridsize: GRID_SIZE,
 		active: true,
+		map: MAPS[0],
+		walls: [{}],
 	};
 }
 
@@ -114,6 +118,7 @@ function gameLoop(state) {
 	playerOne.pos.x += playerOne.vel.x;
 	playerOne.pos.y += playerOne.vel.y;
 
+
 	/** P2 Moving */
 
 	if (playerTwo.keyStates.left) {
@@ -128,7 +133,7 @@ function gameLoop(state) {
 	if (playerTwo.keyStates.down) {
 		playerTwo.vel.y = 0.10;
 	}
-
+	
 	playerTwo.pos.x += playerTwo.vel.x;
 	playerTwo.pos.y += playerTwo.vel.y;
 
@@ -175,15 +180,15 @@ function gameLoop(state) {
 
 	for (let cell of playerOne.bullet) {
 		if (playerOne.shooting) {
-			if (cell.x < playerTwo.pos.x + 1 &&
-				cell.x + 0.33 > playerTwo.pos.x &&
-				cell.y < playerTwo.pos.y + 1 &&
-				0.33 + cell.y > playerTwo.pos.y) { //hit
+			var dx = cell.x - playerTwo.pos.x;
+			var dy = cell.y - playerTwo.pos.y;
+			var radiiSum = 0.33 + 1;
+			if ((dx * dx + dy * dy) < radiiSum * radiiSum) { //hit
 				playerTwo.health -= 20;
+				playerOne.shooting = false;
 				if (playerTwo.health == 0) {
 					return 1; // P1 wins
 				}
-				console.log("hit");
 			}
 		}
 	}
@@ -192,30 +197,19 @@ function gameLoop(state) {
 
 	for (let cell of playerTwo.bullet) {
 		if (playerTwo.shooting) {
-			if (cell.x < playerOne.pos.x + 1 &&
-				cell.x + 0.33 > playerOne.pos.x &&
-				cell.y < playerOne.pos.y + 0.6 &&
-				0.33 + cell.y > playerOne.pos.y) { //hit
+			var dx = cell.x - playerOne.pos.x;
+			var dy = cell.y - playerOne.pos.y;
+			var radiiSum = 0.33 + 1;
+			if ((dx * dx + dy * dy) < radiiSum * radiiSum) { //hit
 				playerOne.health -= 20;
+				playerTwo.shooting = false;
 				if (playerOne.health == 0) {
 					return 2; // P2 wins
 				}
-				console.log("hit");
 			}
 		}
 	}
 
-
-	/**TO CHANGE */
-
-	if (playerOne.pos.x < 0 || playerOne.pos.x > GRID_SIZE || playerOne.pos.y < 0 || playerOne.pos.y > GRID_SIZE) {
-		return 2; // player 2 wins  (outside canvas)
-
-	}
-	if (playerTwo.pos.x < 0 || playerTwo.pos.x > GRID_SIZE || playerTwo.pos.y < 0 || playerTwo.pos.y > GRID_SIZE) {
-		return 1; // player 1 wins  (outside canvas)
-
-	}
 
 	/** Health pickup */
 
@@ -230,6 +224,7 @@ function gameLoop(state) {
 		}
 	}
 
+
 	if (playerTwo.pos.x < state.healthPickup.x + 0.5 &&
 		playerTwo.pos.x + 1 > state.healthPickup.x &&
 		playerTwo.pos.y < state.healthPickup.y + 0.5 &&
@@ -238,6 +233,28 @@ function gameLoop(state) {
 		if (playerTwo.health != 100) {
 			playerTwo.health += 20;
 			randomHealthPickup(state);
+		}
+	}
+
+	/**Wall collision */
+
+	for (let wall of state.walls) {
+		if (playerOne.pos.x < wall.x + 1.5 &&
+			playerOne.pos.x + 0.5 > wall.x &&
+			playerOne.pos.y < wall.y + 1.5 &&
+			0.5 + playerOne.pos.y > wall.y) { //P1 ran into wall
+			if (playerOne.keyStates.right) {
+				playerOne.pos.x -= 0.1
+			}
+			if (playerOne.keyStates.left) {
+				playerOne.pos.x += 0.1
+			}
+			if (playerOne.keyStates.up) {
+				playerOne.pos.y += 0.1
+			}
+			if (playerOne.keyStates.down) {
+				playerOne.pos.y -= 0.1
+			}
 		}
 	}
 
@@ -263,5 +280,32 @@ function randomHealthPickup(state) {
 	}
 
 	state.healthPickup = healthPickup;
+}
+
+function createMap(state) {
+	var map = state.map;
+	var i;
+	var x = 0;
+	var y = 0;
+	var wall = 0;
+	for (i = 0; i < (GRID_SIZE * GRID_SIZE) + 100; i++) {
+		if (map.charAt(i) == 'O') { //empty
+			x++;
+		}
+		if (map.charAt(i) == 'X') { //wall
+			state.walls[wall] = { x: x, y: y, };
+			wall++;
+			x++;
+		}
+		if (map.charAt(i) == '/') { //end of line 
+			y++; //increment y axis
+			if (y == 20) {
+				break;
+			}
+		}
+		if (x == 20) { //reset x axis
+			x = 0;
+		}
+	}
 }
 

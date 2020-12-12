@@ -5,7 +5,7 @@ const { makeid } = require('./utils');
 const state = {};
 const clientRooms = {};
 let currentRoomName = null;
-let gameOver, playerJoined;
+let gameOver, playerJoined; 
 
 io.on('connection', client => {
 
@@ -90,7 +90,7 @@ io.on('connection', client => {
       updateKeyStates(keyCode, false);
    }
 
-   function updateKeyStates(keyCode, value) {
+   function updateKeyStates(keyCode, value) {   
       const roomName = clientRooms[client.id];
       const playerNumber = client.number - 1;
       if (keyCode == 68)   //right
@@ -102,8 +102,8 @@ io.on('connection', client => {
       else if (keyCode == 87) // up
          state[roomName].players[playerNumber].keyStates.up = value;
    }
-
-   function handleShoot() {
+ 
+   function handleShoot() { 
       const roomName = clientRooms[client.id];
       const playerNumber = client.number - 1;
       if (playerJoined) {
@@ -112,7 +112,7 @@ io.on('connection', client => {
    } 
 
    function handleMouseMoved(mouseX, mouseY) {
-      const roomName = clientRooms[client.id];
+      const roomName = clientRooms[client.id]; 
       const playerNumber = client.number - 1;
       if (playerJoined) {
          state[roomName].players[playerNumber].mouseLoc.x = mouseX;
