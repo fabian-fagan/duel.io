@@ -11,11 +11,12 @@ module.exports = {
 function initGame() {
 	const state = createGameState()
 	randomHealthPickup(state);
-	createMap(state);
+	createMap(state);   
 	return state;
 }
 
 function createGameState() {
+	var randomMap = Math.floor(Math.random() * 5);
 	return {
 		players: [{
 			pos: {
@@ -83,7 +84,7 @@ function createGameState() {
 		healthPickup: {},
 		gridsize: GRID_SIZE,
 		active: true,
-		map: MAPS[0],
+		map: MAPS[randomMap],
 		walls: [{}],
 	};
 }
@@ -103,15 +104,19 @@ function gameLoop(state) {
 	/** P1 Moving */
 
 	if (playerOne.keyStates.left) {
+		playerOne.moving = true;
 		playerOne.vel.x = -0.10;
 	}
 	if (playerOne.keyStates.right) {
+		playerOne.moving = true;
 		playerOne.vel.x = 0.10;
 	}
 	if (playerOne.keyStates.up) {
+		playerOne.moving = true;
 		playerOne.vel.y = -0.10;
 	}
 	if (playerOne.keyStates.down) {
+		playerOne.moving = true;
 		playerOne.vel.y = 0.10;
 	}
 
@@ -122,18 +127,22 @@ function gameLoop(state) {
 	/** P2 Moving */
 
 	if (playerTwo.keyStates.left) {
+		playerTwo.moving = true;
 		playerTwo.vel.x = -0.10;
 	}
 	if (playerTwo.keyStates.right) {
+		playerTwo.moving = true;
 		playerTwo.vel.x = 0.10;
 	}
 	if (playerTwo.keyStates.up) {
+		playerTwo.moving = true;
 		playerTwo.vel.y = -0.10;
 	}
 	if (playerTwo.keyStates.down) {
+		playerTwo.moving = true;
 		playerTwo.vel.y = 0.10;
 	}
-	
+
 	playerTwo.pos.x += playerTwo.vel.x;
 	playerTwo.pos.y += playerTwo.vel.y;
 
@@ -239,24 +248,45 @@ function gameLoop(state) {
 	/**Wall collision */
 
 	for (let wall of state.walls) {
-		if (playerOne.pos.x < wall.x + 1.5 &&
-			playerOne.pos.x + 0.5 > wall.x &&
-			playerOne.pos.y < wall.y + 1.5 &&
-			0.5 + playerOne.pos.y > wall.y) { //P1 ran into wall
-			if (playerOne.keyStates.right) {
-				playerOne.pos.x -= 0.1
-			}
-			if (playerOne.keyStates.left) {
-				playerOne.pos.x += 0.1
-			}
-			if (playerOne.keyStates.up) {
-				playerOne.pos.y += 0.1
-			}
-			if (playerOne.keyStates.down) {
-				playerOne.pos.y -= 0.1
+		if (playerOne.moving) {
+			if (playerOne.pos.x < wall.x + 1.5 &&
+				playerOne.pos.x + 0.5 > wall.x &&
+				playerOne.pos.y < wall.y + 1.5 &&
+				0.5 + playerOne.pos.y > wall.y) { //P1 ran into wall
+				if (playerOne.keyStates.right) {
+					playerOne.pos.x -= 0.1
+				}
+				if (playerOne.keyStates.left) {
+					playerOne.pos.x += 0.1
+				}
+				if (playerOne.keyStates.up) {
+					playerOne.pos.y += 0.1
+				}
+				if (playerOne.keyStates.down) {
+					playerOne.pos.y -= 0.1
+				}
 			}
 		}
-	}
+		if (playerTwo.moving) {
+			if (playerTwo.pos.x < wall.x + 1.5 &&
+				playerTwo.pos.x + 0.5 > wall.x &&
+				playerTwo.pos.y < wall.y + 1.5 &&
+				0.5 + playerTwo.pos.y > wall.y) { //P1 ran into wall
+				if (playerTwo.keyStates.right) {
+					playerTwo.pos.x -= 0.1
+				}
+				if (playerTwo.keyStates.left) {
+					playerTwo.pos.x += 0.1
+				}
+				if (playerTwo.keyStates.up) {
+					playerTwo.pos.y += 0.1
+				}
+				if (playerTwo.keyStates.down) {
+					playerTwo.pos.y -= 0.1
+				}
+			}
+		}
+	} 
 
 	playerOne.body.push({ ...playerOne.pos });
 	playerOne.body.shift();

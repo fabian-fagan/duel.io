@@ -32,7 +32,6 @@ function joinGame() {
 }
 
 let canvas, ctx;
-let mapnum = 0;
 let playerNumber;
 let gameActive = false;
 

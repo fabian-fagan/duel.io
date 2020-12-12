@@ -55,7 +55,7 @@ io.on('connection', client => {
       state[roomName] = initGame();
 
       client.join(roomName);
-      client.number = 1;
+      client.number = 1; 
       client.emit('init', 1);
    }  
 
