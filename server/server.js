@@ -1,5 +1,5 @@
 const io = require('socket.io')();
-const { initGame, gameLoop,  } = require('./game');
+const { initGame, gameLoop,   } = require('./game');
 const { FRAME_RATE } = require('./constants');
 const { makeid } = require('./utils');  
 const state = {};
@@ -119,7 +119,7 @@ io.on('connection', client => {
          state[roomName].players[playerNumber].mouseLoc.y = mouseY;
       }
    }
-    
+     
  
 });
 
@@ -131,13 +131,14 @@ function startGameInterval(roomName) {
       if (!winner) { //game continues
          emitGameState(roomName, state[roomName]);
       }
-      else { //game over
+      else if (winner == 1 || winner == 2){ //game over
          emitGameOver(roomName, winner);
          gameOver = true;
          //state[roomName] = null;
          //clearInterval(intervalId);
 
       }
+
    }, 1000 / FRAME_RATE);
 }
 

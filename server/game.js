@@ -1,7 +1,5 @@
 const { GRID_SIZE } = require('./constants');
 const { MAPS } = require('./constants');
-let trajectoryXp1, trajectoryYp1;
-let trajectoryXp2, trajectoryYp2;
 
 module.exports = {
 	initGame,
@@ -11,7 +9,7 @@ module.exports = {
 function initGame() {
 	const state = createGameState()
 	randomHealthPickup(state);
-	createMap(state);   
+	createMap(state);
 	return state;
 }
 
@@ -45,6 +43,10 @@ function createGameState() {
 				left: false,
 				right: false
 			},
+			trajectory: {
+				x:0,
+				y:0,
+			},
 			moving: false,
 			shooting: false,
 			health: 100,
@@ -77,13 +79,17 @@ function createGameState() {
 				left: false,
 				right: false
 			},
+			trajectory: {
+				x:0,
+				y:0,
+			},
 			moving: false,
 			shooting: false,
 			health: 100,
 			score: 0,
 
 		}],
-		healthPickup: {},
+		healthPickup: [{}, {}],
 		gridsize: GRID_SIZE,
 		active: true,
 		map: MAPS[randomMap],
@@ -151,13 +157,13 @@ function gameLoop(state) {
 	/**P1 Shooting */
 
 	if (!playerOne.shooting) {
-		trajectoryXp1 = (playerOne.mouseLoc.x / 40) - playerOne.pos.x; //devide mouse loc by 40 for grid of 20
-		trajectoryYp1 = (playerOne.mouseLoc.y / 40) - playerOne.pos.y;
+		playerOne.trajectory.x = (playerOne.mouseLoc.x / 40) - playerOne.pos.x; //devide mouse loc by 40 for grid of 20
+		playerOne.trajectory.y = (playerOne.mouseLoc.y / 40) - playerOne.pos.y;
 	}
 
 	if (playerOne.shooting) {
-		playerOne.bullet[0].x = playerOne.bullet[0].x + (trajectoryXp1 * 0.15);
-		playerOne.bullet[0].y = playerOne.bullet[0].y + (trajectoryYp1 * 0.15);
+		playerOne.bullet[0].x = playerOne.bullet[0].x + (playerOne.trajectory.x * 0.15);
+		playerOne.bullet[0].y = playerOne.bullet[0].y + (playerOne.trajectory.y * 0.15);
 		if (playerOne.bullet[0].x < 0 || playerOne.bullet[0].x > GRID_SIZE || playerOne.bullet[0].y < 0 || playerOne.bullet[0].y > GRID_SIZE) {
 			playerOne.shooting = false; //   (outside canvas)
 
@@ -171,13 +177,13 @@ function gameLoop(state) {
 	/**P2 Shooting */
 
 	if (!playerTwo.shooting) {
-		trajectoryXp2 = (playerTwo.mouseLoc.x / 40) - playerTwo.pos.x; //devide mouse loc by 30 for grid of 20
-		trajectoryYp2 = (playerTwo.mouseLoc.y / 40) - playerTwo.pos.y;
+		playerTwo.trajectory.x = (playerTwo.mouseLoc.x / 40) - playerTwo.pos.x; //devide mouse loc by 30 for grid of 20
+		playerTwo.trajectory.y = (playerTwo.mouseLoc.y / 40) - playerTwo.pos.y;
 	}
 
 	if (playerTwo.shooting) {
-		playerTwo.bullet[0].x = playerTwo.bullet[0].x + (trajectoryXp2 * 0.2);
-		playerTwo.bullet[0].y = playerTwo.bullet[0].y + (trajectoryYp2 * 0.2);
+		playerTwo.bullet[0].x = playerTwo.bullet[0].x + (playerTwo.trajectory.x * 0.2);
+		playerTwo.bullet[0].y = playerTwo.bullet[0].y + (playerTwo.trajectory.y * 0.2);
 		if (playerTwo.bullet[0].x < 0 || playerTwo.bullet[0].x > GRID_SIZE || playerTwo.bullet[0].y < 0 || playerTwo.bullet[0].y > GRID_SIZE) {
 			playerTwo.shooting = false; //   (outside canvas)
 		}
@@ -199,7 +205,12 @@ function gameLoop(state) {
 				playerOne.shooting = false;
 				if (playerTwo.health == 0) {
 					playerOne.score += 1;
-					return 1; // P1 wins
+					if (playerOne.score == 5) {
+						return 1;// P1 wins
+					}
+					else {
+						newRound(state); //round over
+					}
 				}
 			}
 		}
@@ -217,7 +228,12 @@ function gameLoop(state) {
 				playerTwo.shooting = false;
 				if (playerOne.health == 0) {
 					playerTwo.score += 1;
-					return 2; // P2 wins
+					if (playerTwo.score == 5) {
+						return 2;// P2 wins
+					}
+					else {
+						newRound(state); //round over
+					}
 				}
 			}
 		}
@@ -290,7 +306,33 @@ function gameLoop(state) {
 				}
 			}
 		}
-	} 
+	}
+
+	if (playerOne.shooting) {
+		for (let wall of state.walls) {
+			for (let bullet of playerOne.bullet) {
+				if (bullet.x < wall.x + 0.9 &&
+					bullet.x + 0.3 > wall.x &&
+					bullet.y < wall.y + 0.9 &&
+					0.3 + bullet.y > wall.y) { //P1 shot wall
+					playerOne.shooting = false;
+				}
+			}
+		}
+	}
+
+	if (playerTwo.shooting) {
+		for (let wall of state.walls) {
+			for (let bullet of playerTwo.bullet) {
+				if (bullet.x < wall.x + 0.9 &&
+					bullet.x + 0.3 > wall.x &&
+					bullet.y < wall.y + 0.9 &&
+					0.3 + bullet.y > wall.y) { //P2 shot wall
+					playerTwo.shooting = false;
+				}
+			}
+		}
+	}
 
 	playerOne.body.push({ ...playerOne.pos });
 	playerOne.body.shift();
@@ -302,18 +344,29 @@ function gameLoop(state) {
 }
 
 function randomHealthPickup(state) {
-	healthPickup = {
+
+	pickup1 = {
+		x: Math.floor(Math.random() * GRID_SIZE),
+		y: Math.floor(Math.random() * GRID_SIZE),
+	}
+	pickup2 = {
 		x: Math.floor(Math.random() * GRID_SIZE),
 		y: Math.floor(Math.random() * GRID_SIZE),
 	}
 
-	for (let cell of state.players[0].body) {
-		if (cell.x === healthPickup.x && cell.y === healthPickup.y) {
-			return randomHealthPickup(state); //find square that isnt wall
+	for (let pickup of state.healthPickup) {
+		for (let cell of state.players[0].body) {
+			for (let wall of state.walls) {
+				if (cell.x === pickup.x && cell.y === pickup.y) {
+					if (wall.x === healthPickup.x && wall.y === healthPickup.y) {
+						return randomHealthPickup(state); //find square that isnt wall or body
+					}
+				}
+			}
 		}
 	}
-
-	state.healthPickup = healthPickup;
+	state.healthPickup[0] = pickup1;
+	state.healthPickup[1] = pickup2;
 }
 
 function createMap(state) {
@@ -341,5 +394,17 @@ function createMap(state) {
 			x = 0;
 		}
 	}
+}
+
+function newRound(state) {
+	var randomMap = Math.floor(Math.random() * 5);
+	state.map = MAPS[randomMap];
+	state.players[0].pos = { x: 3, y: 10 };
+	state.players[1].pos = { x: 18, y: 10 };
+	state.players[0].health = 100;
+	state.players[1].health = 100;
+	randomHealthPickup(state);
+	createMap(state);
+	return state;
 }
 

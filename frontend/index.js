@@ -88,24 +88,26 @@ function paintGame(state) {
 	const size = canvas.width / gridsize;
 
 	ctx.fillStyle = HP_COLOUR;
-	ctx.fillRect(healthPickup.x * size, healthPickup.y * size, size / 2.66, size / 2.66); //health pickup
+	for (let pickup of healthPickup) {
+		ctx.fillRect(pickup.x * size, pickup.y * size, size / 2.66, size / 2.66); //health pickup
+	}
 
 	/* Map (currently draws every frame -- not ideal)*/
 	ctx.fillStyle = 'grey';
 	for (let wall of state.walls) {
-        ctx.fillRect(wall.x * size, wall.y * size, size, size);
+		ctx.fillRect(wall.x * size, wall.y * size, size, size);
 	}
-	paintPlayer(state.players[0], size, BODY_COLOUR); 
+	paintPlayer(state.players[0], size, BODY_COLOUR);
 	paintPlayer(state.players[1], size, 'red');
 
 	/*Scores*/
-    ctx.font = "30px Arial"; 
+	ctx.font = "30px Arial";
 	ctx.fillStyle = 'white';
-	ctx.fillText("Score:", 20,30);
-	ctx.fillText(state.players[0].score, 120,30);
+	ctx.fillText("Score:", 20, 30);
+	ctx.fillText(state.players[0].score, 120, 30);
 	ctx.fillStyle = 'red';
-	ctx.fillText("Score:", 650,30);
-	ctx.fillText(state.players[1].score, 750,30);
+	ctx.fillText("Score:", 650, 30);
+	ctx.fillText(state.players[1].score, 750, 30);
 }
 
 function paintPlayer(playerState, size, colour) {
@@ -160,10 +162,10 @@ function handleGameOver(data) {
 	}
 	data = JSON.parse(data);
 	if (data.winner === playerNumber) {
-		//alert("You win!!");
+		alert("You win!!");
 	}
 	else {
-		//alert("You lose!!!");
+		alert("You lose!!!");
 	}
 	//gameActive = false;
 	socket.emit('restart');
