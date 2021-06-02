@@ -44,6 +44,7 @@ io.on('connection', client => {
       client.emit('init', 2);
       playerJoined = true;
       startGameInterval(roomName);
+      handleRestart()
    }
 
    function handleNewGame() {
