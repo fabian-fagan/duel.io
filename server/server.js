@@ -39,6 +39,7 @@ io.on('connection', client => {
       }
 
       clientRooms[client.id] = roomName;
+      state[roomName] = initGame();
       client.join(roomName);
       client.number = 2;
       client.emit('init', 2);
