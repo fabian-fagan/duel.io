@@ -7,6 +7,7 @@ Frontend is deployed to Netlify and the backend deploys to Heroku. The default s
 localhost3000 for testing.
 
 The game can be accessed [here!](https://duelio.netlify.app/) 
+(Press the restart button 'R' when you first join a game or else P2 wont be able to shoot.. fix in progress!)
 
 ![menu](https://github.com/fabian-fagan/duel.io/blob/main/images/menu.PNG) 
 ![game](https://github.com/fabian-fagan/duel.io/blob/main/images/game.png)
