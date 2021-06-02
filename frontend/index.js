@@ -50,7 +50,6 @@ function init() {
 	document.addEventListener('click', shoot);
 	document.addEventListener('mousemove', mouseMoved);
 	gameActive = true;
-	socket.emit('restart');
 
 }
 
