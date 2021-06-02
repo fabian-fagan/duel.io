@@ -43,8 +43,8 @@ io.on('connection', client => {
       client.number = 2;
       client.emit('init', 2);
       playerJoined = true;
-      startGameInterval(roomName);
       handleRestart()
+      startGameInterval(roomName);
    }
 
    function handleNewGame() {
