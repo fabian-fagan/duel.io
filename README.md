@@ -6,7 +6,7 @@ your room and the game starts from there. First to 5 wins!
 Frontend is deployed to Netlify and the backend deploys to Heroku. The default socket can be changed to 
 localhost3000 for testing.
 
-The game can be accessed [here!](https://duelio.netlify.app/)
+The game can be accessed [here!](https://duelio.netlify.app/) 
 
 ![menu](https://github.com/fabian-fagan/duel.io/blob/main/images/menu.PNG) 
 ![game](https://github.com/fabian-fagan/duel.io/blob/main/images/game.png)
